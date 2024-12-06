@@ -20,7 +20,7 @@ export const POKEMON_ARTWORK_URL = "https://raw.githubusercontent.com/PokeAPI/sp
 export async function fetchPokemons(search: string): Promise<PokemonInfo[]> {
   const pokemons = await fetch("https://pokeapi.co/api/v2/pokemon-species?limit=10000");
   const json = await pokemons.json();
-  let results: any[] = json.results;
+  let results: { name: string, url: string }[] = json.results;
 
   if (search) {
     results = results
@@ -30,7 +30,7 @@ export async function fetchPokemons(search: string): Promise<PokemonInfo[]> {
   return await Promise.all(
     results.map(async ({ name, url }: { name: string, url: string }) => {
       const backupId = url.split('/').filter(Boolean).pop();
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
       const pokemon = await res.json();
       return {
         id: pokemon.id || backupId,
@@ -59,18 +59,13 @@ const gqlQuery = `query pokemon($name: String!) {
 export async function fetchPokemonsFromGraphql(search: string): Promise<PokemonInfo[]> {
   const pokemons = await fetch("https://pokeapi.co/api/v2/pokemon-species?limit=10000");
   const json = await pokemons.json();
-  let results: any[] = json.results;
+  let results: { name: string, url: string }[] = json.results;
 
   if (search) {
     results = results
       .filter(({ name }: { name: string }) => name.includes(search))
   }
 
-  // if (filterTypes?.length > 0) {
-  //   results = results.filter(({ types: { type: { name }}}: { types: { type: { name: string }}}) => filterTypes.includes(name))
-  // }
-
-  console.log("results", results, search)
   return await Promise.all(
     results.map(async ({ name, url }: { name: string, url: string }) => {
       const backupId = url.split('/').filter(Boolean).pop();
